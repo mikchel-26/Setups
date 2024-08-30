@@ -156,3 +156,82 @@ cmake .. -G "MSYS Makefiles"
 cmake --build .
 .\HelloWorld.exe
 ```
+
+# CppUTest
+
+Клонирование репозитория с  фреймворком.
+
+```git
+git clone https://github.com/cpputest/cpputest.git
+```
+
+В директории `cpputest/` генерируем и собираем проект.
+
+```cmd
+mkdir cpputest_build_gcc
+cmake -B cpputest_build_gcc -G "MSYS Makefiles"
+cmake --build cpputest_build_gcc
+```
+
+Далее, если хотим использовать `MakefileWorker.mk` (вроде облегчает сборку нового проекта, но помоему через cmake удобнее), то необходимо внести правки в этот файл.
+Прописать директории, где находятся собранные статические библиотеки (файлы *.a).
+
+```MakefileWorker.mk
+ifndef TARGET_PLATFORM
+  #CPPUTEST_LIB_LINK_DIR = $(CPPUTEST_HOME)/lib
+  CPPUTEST_LIB_LINK_DIR = $(CPPUTEST_HOME)/cpputest_build_gcc/src
+
+...
+
+# Link with CppUTest lib
+CPPUTEST_LIB = $(CPPUTEST_LIB_LINK_DIR)/CppUTest/libCppUTest.a
+
+ifeq ($(CPPUTEST_USE_EXTENSIONS), Y)
+CPPUTEST_LIB += $(CPPUTEST_LIB_LINK_DIR)/CppUTestExt/libCppUTestExt.a
+endif
+```
+
+Клонирование репозитория с тестовым проектом для использования фреймворка.
+
+```git
+git clone https://github.com/jwgrenning/cpputest-starter-project.git
+```
+
+Переходим в его директорию `cpputest-starter-project` и собираем с помощью `make` исполняемый файл.
+Запускаем
+
+```cmd
+cd cpputest-starter-project/
+make
+
+compiling MyFirstTest.cpp
+Linking your_tests
+Running your_tests
+.
+tests/MyFirstTest.cpp:23: error: Failure in TEST(MyCode, test1)
+        Your test is running! Now delete this line and watch your test pass.
+
+........
+←[31;1mErrors (1 failures, 9 tests, 9 ran, 15 checks, 0 ignored, 0 filtered out, 6 ms)←[m
+
+make: *** [E:\workspace\frameworks\cpputest/build/MakefileWorker.mk:491: all] Error 1
+```
+
+В файле `tests/MyFirstTest.cpp` комментируем следующую строку
+
+```cpp
+TEST(MyCode, test1)
+{
+   //FAIL("Your test is running! Now delete this line and watch your test pass.");
+```
+
+Снова собираем make и запускаем исполняемый файл.
+
+```cmd
+make
+your_tests.exe
+
+.........
+OK (9 tests, 9 ran, 14 checks, 0 ignored, 0 filtered out, 2 ms)
+```
+
